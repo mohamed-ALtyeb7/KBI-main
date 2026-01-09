@@ -1,0 +1,90 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function userRole(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.role;
+    }
+    function isSuperAdmin() {
+      return request.auth != null && userRole(request.auth.uid) == "super_admin";
+    }
+    function isAdmin() {
+      return request.auth != null && userRole(request.auth.uid) == "admin";
+    }
+    function isTechnician() {
+      return request.auth != null && userRole(request.auth.uid) == "technician";
+    }
+    function isCustomer() {
+      return request.auth != null && userRole(request.auth.uid) == "customer";
+    }
+    function isAssignedTechnician(order) {
+      return isTechnician() && (order.data.technicianId == request.auth.uid || order.data.assignedTechnicianId == request.auth.uid);
+    }
+    function isOrderCustomer(order) {
+      return isCustomer() && order.data.customerId == request.auth.uid;
+    }
+    function diffOnlyAllows(fields) {
+      // All changed keys are within allowed fields
+      return (request.resource.data.diff(resource.data).changedKeys().hasOnly(fields));
+    }
+
+    match /orders/{orderId} {
+      allow read: if isAdmin() || isSuperAdmin() || isAssignedTechnician(resource) || isOrderCustomer(resource);
+
+      // Technician can write ONLY proposal-related fields on assigned/accepted orders
+      allow update: if isAssignedTechnician(resource)
+        && resource.data.status in ["assigned", "accepted"]
+        && diffOnlyAllows([
+          "proposedPrice","proposedPriceMin","proposedPriceMax","proposedBreakdown","proposedDurationMinutes",
+          "proposedArrivalETA","proposalNote","proposalMediaUrls","proposedByTechnicianId","proposedAt","proposedExpiresAt"
+        ]);
+
+      // Admin can assign technicians and update assignment/status to assigned
+      allow update: if isAdmin()
+        && diffOnlyAllows([
+          "technicianId","technicianName","assignedTechnicianId","assignedTechnicianName","assignedAt","status","assignmentHistory","updatedAt"
+        ]) && request.resource.data.status == "assigned";
+
+      // Super Admin can approve/reject/counter and override
+      allow update: if isSuperAdmin();
+
+      // Prevent non-super-admin from approving or countering
+      allow update: if !isSuperAdmin()
+        && !diffOnlyAllows(["pricingStatus","approvedPrice","approvedDurationMinutes","approvedArrivalETA","approvedByAdminId","approvedAt","counterPrice","counterDurationMinutes","counterArrivalETA","counterByAdminId","counterAt"]) == true
+        => false;
+
+      // Enforce that starting work requires approved pricing (any role performing status change)
+      allow update: if request.resource.data.status == "in_progress"
+        && resource.data.pricingStatus == "approved";
+    }
+
+    match /notifications/{id} {
+      allow read: if isAdmin() || isSuperAdmin() || (isTechnician() && resource.data.userId == request.auth.uid) || (isCustomer() && resource.data.userId == request.auth.uid);
+      allow create: if isAdmin() || isSuperAdmin();
+      allow update, delete: if isAdmin() || isSuperAdmin();
+    }
+
+    match /tech_requests/{id} {
+      allow read: if isAdmin() || isSuperAdmin() || (isTechnician() && resource.data.technicianId == request.auth.uid);
+      allow create: if isTechnician() && request.resource.data.technicianId == request.auth.uid;
+      allow update, delete: if isAdmin() || isSuperAdmin();
+    }
+
+    match /technicians/{id} {
+      allow read: if isAdmin() || isSuperAdmin();
+      allow update, delete, create: if isAdmin() || isSuperAdmin();
+    }
+
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid || isAdmin() || isSuperAdmin();
+      allow update: if request.auth != null && request.auth.uid == uid || isAdmin() || isSuperAdmin();
+      allow create: if true;
+    }
+
+    match /password_otps/{uid} {
+      allow read, create, update, delete: if request.auth != null
+        && (userRole(request.auth.uid) in ["admin", "super_admin"])
+        && (uid == request.auth.uid);
+    }
+
+  }
+}

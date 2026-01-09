@@ -1,0 +1,123 @@
+Admin Orders Page Details (/admin/orders)
+
+File
+- Path: app/admin/orders/page.tsx
+- Component: AdminOrdersPage
+
+Access & Auth
+- Auth guard using Firebase Auth; redirects to /admin/login when unauthenticated
+- Authorized users see orders list with filters, actions, and details modal
+
+Data & Real-Time Subscriptions
+- Orders: Firestore collection "orders" ordered by createdAt desc; real-time via onSnapshot
+- Technicians: Firestore collection "technicians"; real-time via onSnapshot
+- Order mapping normalizes fields: orderId, customerName/Phone, deviceType, brand, model, issue, status, technician info, createdAt, estimatedCompletion, price, notes, statusHistory
+- Status normalization (normalizeStatus): maps various strings to one of pending, in_progress, waiting_parts, completed, delivered, cancelled
+
+State
+- orders, technicians, search text, statusFilter, loading
+- selectedOrder, isDetailsOpen
+- invoice states: invoiceDialogOpen, invoiceNumber, invoiceLang (en/ar/both), invoiceDiscount, vatEnabled, vatRate, warrantyPeriod, adminNotesInvoice, disclaimerText, invoiceFinalized, overrideReason
+- pagination: itemsPerPage = 10, currentPage
+- etaMinutes (update order ETA)
+
+Top Bar Actions
+- Export CSV: exports filtered orders to CSV with columns Order ID, Customer, Phone, Device, Issue, Status, Technician, Created, Price
+- New Order: button present (no creation flow implemented here)
+
+Filters
+- Search by customer name, order ID, or phone
+- Status filter: All, Pending, In Progress, Waiting Parts, Completed, Delivered, Cancelled
+
+Table Columns
+- Order ID
+- Customer (name + phone)
+- Device (brand + model)
+- Issue
+- Status (badge with color by status)
+- Technician (name or “Unassigned”)
+- Created (relative time via formatDistanceToNow)
+- Actions (menu)
+
+Row Actions Menu
+- View Details: opens Order Details modal
+- Update Status: In Progress, Completed (writes to order.status and appends to statusHistory with note)
+- Assign Technician: lists all technicians; writes technicianId/name, sets status to In Progress, appends statusHistory
+- Notify Customer (WhatsApp): Order Received, Technician Assigned, Repair Complete; opens WhatsApp with template messages
+- Delete Order: deletes Firestore doc and logs audit
+
+Order Details Modal
+- Header shows Order Details: [orderId]
+- Customer: name, phone
+- Device: brand + model + deviceType
+- Issue: issue text
+- Status: badge showing current status
+- ETA (minutes): input + Save; writes estimatedCompletion as ISO (current time + minutes)
+- Estimated Completion: shows date-time if present
+
+Order Timeline (heuristic)
+- Steps: Order Placed, In Repair, Repair Completed, Delivered
+- Current step derived from status (cancelled handled specially)
+- For each step: shows label, description, and timestamp from matching statusHistory entry if available
+
+Detailed History
+- Reverse list of statusHistory with note/status and timestamp
+
+Invoice Section
+- Generate Final Invoice: ensures invoiceNumber via counter doc, opens preview dialog
+- Preview Invoice: opens invoice preview modal with FinalInvoice component
+- Print Invoice / Download as PDF: window.print stubs
+- Resend to Customer: opens WhatsApp with bilingual message including final amount
+- Inputs: Discount, Warranty Period, VAT Enabled, VAT Rate, Disclaimer, Admin Notes
+- Language toggles: English, Arabic, EN + AR
+- Invoice Status badge: shows finalized or draft
+- Finalize Invoice: computes subtotal/discount/VAT/total and writes invoice object to order with history using arrayUnion; updates updatedAt
+- Override Edit: appends override entry to invoice.history with note; resets overrideReason input
+
+Pagination
+- Displays Previous/Next; shows current page and total pages
+- Slices filtered orders by itemsPerPage
+
+Helper Functions
+- normalizeStatus(status): enforces allowed status values
+- getInvoiceItemsForOrder(order): base line item from order.price + any invoiceItems
+- getNextInvoiceNumber(): Firestore transaction on counters/invoices to get next sequence “INV-000001”
+- openInvoicePreview(): ensures invoiceNumber then opens preview dialog
+- finalizeInvoice(): writes invoice object (invoiceNumber, invoiceDate, status, generatedBy, discount, vatRate, vatEnabled, warrantyPeriod, adminNotes, disclaimerText, subtotal, total, language, history) and updatedAt
+- overrideInvoice(): appends override to invoice.history and updates updatedAt
+- handleStatusUpdate(orderId, newStatus): updates status, adds statusHistory, auto WhatsApp for certain statuses, logs audit
+- handleAssignTech(orderId, techId): assigns technician, sets status in_progress, adds statusHistory, WhatsApp notify, logs audit
+- handleDelete(orderId): deletes order, shows toast, logs audit
+- handleWhatsAppNotify(order, messageType): sends order confirmation/assigned/complete via templates
+- handleEtaUpdate(): writes estimatedCompletion (ISO) and updatedAt
+- statusLabel(s): localized label for status
+- exportCSV(): builds CSV via data URI from filteredOrders
+
+External Dependencies
+- UI: Table, Input, Select, Button, Badge, Dialog, Dropdown Menu, FinalInvoice
+- Icons: lucide-react (Search, Filter, MoreHorizontal, User, Clock, Calendar, Trash2, Edit, Eye, CheckCircle, AlertTriangle, FileDown, Plus, MessageCircle)
+- Firebase: collection, onSnapshot, doc, updateDoc, deleteDoc, orderBy, query, Timestamp, arrayUnion, runTransaction; Auth guard via onAuthStateChanged
+- Utils: formatDistanceToNow (date-fns), cn, useT, toast
+- WhatsApp: openWhatsApp, WhatsAppTemplates, formatPhoneForWhatsApp
+- Audit: logAction, AuditActions
+
+Firestore Writes
+- Update status and statusHistory on orders
+- Assign technician, update status
+- Delete orders
+- Update estimatedCompletion
+- Invoice finalize: writes invoice object and updatedAt
+- Invoice override: appends to invoice.history and updates updatedAt
+- Counters: transactional invoice numbering in document counters/invoices
+
+Edge Handling & Fallbacks
+- customerName fallback: order.customerName || name || “Unknown”
+- customerPhone fallback to blank
+- deviceType defaults to “Device”
+- brand/model/issue strings handled robustly
+- createdAt display falls back to “Just now” if missing
+- Technician name shows “Unassigned” when absent
+
+File References
+- Orders page: app/admin/orders/page.tsx
+

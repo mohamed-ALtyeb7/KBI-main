@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/technician/layout,_N_T_/technician/login/layout,_N_T_/technician/login/page,_N_T_/technician/login/"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/technician/login/__PAGE__",
+    "/technician/login",
+    "/technician",
+    "/_index",
+    "/_head"
+  ]
+}

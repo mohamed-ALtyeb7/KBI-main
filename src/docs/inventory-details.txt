@@ -1,0 +1,95 @@
+INVENTORY PAGE DETAILS (Admin)
+
+Overview
+- Location: app/admin/inventory/page.tsx
+- Tabs: Spare Parts, Devices List, Models Management, Issues Management
+- Real-time data from Firestore; images via Firebase Storage
+- Admin guard: redirects to /admin/login if not authenticated; supports Mock Mode
+
+Authentication
+- Uses onAuthStateChanged(auth) to require admin login
+- Mock Mode: checks localStorage mock_admin_user; loads sample data without Firestore writes
+
+Data Sources (Firestore Collections)
+- devices: { name, icon }
+- brands: { deviceId, name }
+- models: { brandId, name }
+- issues: { deviceId, name, durationMinutes }
+- parts: see Spare Parts fields
+
+Spare Parts (components/parts-inventory.tsx)
+- Stats: Total Parts, Inventory Value (sum of quantity*cost), Low Stock count, Out of Stock count
+- Filters: search (name/SKU/brand), category, brand, stock (all/low/out)
+- Sorting: by name, quantity, or category
+- Add/Edit Part dialog with fields:
+  - name (required)
+  - sku
+  - category (preset list)
+  - brand (preset list)
+  - compatibleDevices (comma separated; stored as array)
+  - quantity (number)
+  - minStock (number; low stock threshold)
+  - cost (AED)
+  - price (AED)
+  - location (e.g., shelf)
+  - supplier
+  - description
+- Actions:
+  - Add new part (addDoc to parts)
+  - Edit part (updateDoc)
+  - Delete part (deleteDoc)
+  - Increment/decrement quantity (updateDoc)
+- Stock status badges:
+  - In Stock (quantity > minStock)
+  - Low Stock (0 < quantity <= minStock)
+  - Out of Stock (quantity == 0)
+
+Devices List
+- Add device: name + optional icon (via ImageUpload; default icon text if not URL)
+- Lists devices with counts:
+  - Brand count (brands with deviceId)
+  - Issue count (issues with deviceId)
+- Delete device: removes document from devices (note: related data not auto-deleted)
+
+Models Management
+- Select device to manage brands
+- Add brand for selected device
+- List brands; delete brand
+- Select brand to manage models
+- Add model for selected brand
+- List models; delete model
+
+Issues Management
+- Select device to manage issues
+- Add issue: name + durationMinutes (default 30)
+- List issues with inline duration editor (onBlur updates Firestore)
+- Delete issue
+
+Seeding Default Data
+- Button “Seed Default Data” appears when devices list is empty
+- Seeds from lib/data initialDevices:
+  - Creates devices (name, icon)
+  - Creates brands for each device
+  - Creates models for each brand
+  - Creates issues for each device with durationMinutes=30
+- Uses batch writes for performance
+
+Mock Mode Behavior
+- Devices/brands/models/issues loaded with sample entries (Smartphone/Apple/iPhone 13/Screen)
+- All add/update/delete operations manipulate local state only
+- Parts inventory still renders but Firestore interactions depend on real mode
+
+Key Components
+- PartsInventory: components/parts-inventory.tsx (full parts CRUD, filters, stats)
+- ImageUpload: components/ui/image-upload.tsx (uploads to Firebase Storage, returns URL)
+- GlassCard and UI primitives for consistent styling
+
+Navigation and Access
+- Entry: /admin/inventory (tabbed UI inside page)
+- Requires admin login; uses NEXT_PUBLIC_FIREBASE_* settings from .env.local
+
+References
+- Inventory page: app/admin/inventory/page.tsx
+- Parts component: components/parts-inventory.tsx
+- Image upload: components/ui/image-upload.tsx
+- Seed devices data: lib/data

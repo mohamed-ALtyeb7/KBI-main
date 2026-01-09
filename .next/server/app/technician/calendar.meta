@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/technician/layout,_N_T_/technician/calendar/layout,_N_T_/technician/calendar/page,_N_T_/technician/calendar/"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/technician/calendar/__PAGE__",
+    "/technician/calendar",
+    "/technician",
+    "/_index",
+    "/_head"
+  ]
+}
