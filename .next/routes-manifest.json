@@ -8,7 +8,6 @@
       "source": "/:file((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/]+\\.\\w+)/",
       "destination": "/:file",
       "internal": true,
-      "priority": true,
       "missing": [
         {
           "type": "header",
@@ -22,7 +21,6 @@
       "source": "/:notfile((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/\\.]+)",
       "destination": "/:notfile/",
       "internal": true,
-      "priority": true,
       "statusCode": 308,
       "regex": "^(?:/((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/\\.]+))$"
     }
@@ -40,12 +38,6 @@
       "regex": "^/(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/(?:/)?$"
-    },
-    {
-      "page": "/_global-error",
-      "regex": "^/_global\\-error(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/_global\\-error(?:/)?$"
     },
     {
       "page": "/_not-found",
@@ -227,9 +219,7 @@
     "prefetchSuffix": ".prefetch.rsc",
     "prefetchSegmentHeader": "next-router-segment-prefetch",
     "prefetchSegmentSuffix": ".segment.rsc",
-    "prefetchSegmentDirSuffix": ".segments",
-    "clientParamParsing": false,
-    "dynamicRSCPrerender": false
+    "prefetchSegmentDirSuffix": ".segments"
   },
   "rewriteHeaders": {
     "pathHeader": "x-nextjs-rewritten-path",

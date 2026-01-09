@@ -1,7 +1,0 @@
-1:"$Sreact.fragment"
-2:I[91976,["/_next/static/chunks/5eb0f4c79ad2b4f6.js","/_next/static/chunks/dc7f24212fcc49a5.js","/_next/static/chunks/712db370c4799984.js","/_next/static/chunks/2bcfd5578b78be81.js"],"Navbar"]
-3:I[44604,["/_next/static/chunks/5eb0f4c79ad2b4f6.js","/_next/static/chunks/dc7f24212fcc49a5.js","/_next/static/chunks/712db370c4799984.js","/_next/static/chunks/2bcfd5578b78be81.js"],"Footer"]
-4:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/1a476e30dee46234.js"],"OutletBoundary"]
-5:"$Sreact.suspense"
-0:{"buildId":"pKmbiTE914T7WDv0-LrLN","rsc":["$","$1","c",{"children":[["$","main",null,{"className":"min-h-screen bg-black text-white selection:bg-cyan-500/30 pb-16 lg:pb-0","children":[["$","$L2",null,{}],["$","section",null,{"className":"container mx-auto px-6 pt-32 pb-16","children":[["$","h1",null,{"className":"text-3xl font-bold mb-4","children":"Terms of Service"}],["$","p",null,{"className":"text-white/70","children":"These placeholder terms will be updated with complete information."}]]}],["$","$L3",null,{}]]}],[["$","script","script-0",{"src":"/_next/static/chunks/dc7f24212fcc49a5.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/712db370c4799984.js","async":true}],["$","script","script-2",{"src":"/_next/static/chunks/2bcfd5578b78be81.js","async":true}]],["$","$L4",null,{"children":["$","$5",null,{"name":"Next.MetadataOutlet","children":"$@6"}]}]]}],"loading":null,"isPartial":false}
-6:null
