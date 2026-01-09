@@ -70,3 +70,13 @@ node_modules/
  
 # Exclude Expo mobile app from this repo
 mobile/
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Production logs
+.pnpm-debug.log*
+.vercel
